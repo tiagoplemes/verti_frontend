@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Verti — Nova OS</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <div class="container">
+    <h2 class="mb-16">Nova Ordem de Serviço</h2>
+
+    <form id="form-nova-os">
+      <div class="card mb-16">
+        <h3 class="card-titulo">Dados gerais</h3>
+
+        <div class="campo">
+          <label for="titulo">Título *</label>
+          <input class="input" id="titulo" required />
+        </div>
+
+        <div class="campo">
+          <label for="descricao">Descrição *</label>
+          <textarea id="descricao" rows="3" required></textarea>
+        </div>
+
+        <div class="linha">
+          <div class="campo">
+            <label for="valor">Valor (R$)</label>
+            <input class="input" type="number" id="valor" min="0" step="0.01" />
+          </div>
+          <div class="campo">
+            <label for="dataInicioPrevista">Início previsto</label>
+            <input class="input" type="date" id="dataInicioPrevista" />
+          </div>
+          <div class="campo">
+            <label for="dataFimPrevista">Fim previsto</label>
+            <input class="input" type="date" id="dataFimPrevista" />
+          </div>
+        </div>
+      </div>
+
+      <div class="card mb-16">
+        <h3 class="card-titulo">Endereço</h3>
+        <div class="linha">
+          <div class="campo"><label for="rua">Rua</label><input class="input" id="rua" /></div>
+          <div class="campo"><label for="numero">Número</label><input class="input" id="numero" /></div>
+        </div>
+        <div class="linha">
+          <div class="campo"><label for="bairro">Bairro</label><input class="input" id="bairro" /></div>
+          <div class="campo"><label for="cidade">Cidade</label><input class="input" id="cidade" /></div>
+          <div class="campo"><label for="estado">Estado</label><input class="input" id="estado" maxlength="2" /></div>
+        </div>
+      </div>
+
+      <div class="card mb-16">
+        <h3 class="card-titulo">Fiscal responsável</h3>
+        <div class="campo">
+          <select id="fiscalResponsavel">
+            <option value="">Carregando fiscais...</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="card mb-16">
+        <h3 class="card-titulo">Fila de pedreiros *</h3>
+        <p class="texto-suave texto-pequeno">A OS será oferecida ao primeiro da lista; se recusar, passa automaticamente para o próximo.</p>
+
+        <div class="linha" style="align-items: flex-end;">
+          <div class="campo">
+            <label for="select-pedreiro">Pedreiro</label>
+            <select id="select-pedreiro">
+              <option value="">Carregando pedreiros...</option>
+            </select>
+          </div>
+          <div class="campo" style="flex: 0;">
+            <button type="button" class="btn btn-ghost" id="btn-add-pedreiro">+ Adicionar à fila</button>
+          </div>
+        </div>
+
+        <ul class="fila-pedreiros" id="lista-fila"></ul>
+      </div>
+
+      <div class="flex gap-8">
+        <button type="submit" class="btn btn-primario" id="btn-criar">Criar OS</button>
+        <a href="gerente-lista.html" class="btn btn-ghost">Cancelar</a>
+      </div>
+    </form>
+  </div>
+
+  <script src="js/config.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/pages/gerente-nova.js"></script>
+</body>
+</html>

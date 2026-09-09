@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Verti — Usuários</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <div class="container">
+    <div class="flex-entre mb-16">
+      <h2>Usuários</h2>
+      <button class="btn btn-primario" id="btn-novo-usuario">+ Novo usuário</button>
+    </div>
+
+    <div class="card mb-16">
+      <form id="form-filtros" class="linha" style="align-items: flex-end;">
+        <div class="campo">
+          <label for="filtro-nome">Nome</label>
+          <input class="input" id="filtro-nome" placeholder="Buscar por nome" />
+        </div>
+        <div class="campo">
+          <label for="filtro-perfil">Perfil</label>
+          <select id="filtro-perfil">
+            <option value="">Todos</option>
+            <option value="GERENTE">Gerente</option>
+            <option value="FISCAL">Fiscal</option>
+            <option value="PEDREIRO">Pedreiro</option>
+          </select>
+        </div>
+        <div class="campo">
+          <label for="filtro-ativo">Situação</label>
+          <select id="filtro-ativo">
+            <option value="">Todas</option>
+            <option value="true">Ativos</option>
+            <option value="false">Inativos</option>
+          </select>
+        </div>
+        <div class="campo" style="flex: 0;">
+          <button type="submit" class="btn btn-ghost">Filtrar</button>
+        </div>
+      </form>
+    </div>
+
+    <div id="area-tabela"><div class="carregando">Carregando...</div></div>
+  </div>
+
+  <!-- Modal de criação/edição -->
+  <div class="modal-overlay" id="modal-usuario" style="display:none;">
+    <div class="modal">
+      <h3 id="modal-usuario-titulo">Novo usuário</h3>
+      <form id="form-usuario">
+        <input type="hidden" id="usuario-id" />
+        <div class="campo">
+          <label for="usuario-nome">Nome *</label>
+          <input class="input" id="usuario-nome" required />
+        </div>
+        <div class="campo">
+          <label for="usuario-email">E-mail *</label>
+          <input class="input" type="email" id="usuario-email" required />
+        </div>
+        <div class="campo">
+          <label for="usuario-telefone">Telefone</label>
+          <input class="input" id="usuario-telefone" />
+        </div>
+        <div class="campo">
+          <label for="usuario-perfil">Perfil *</label>
+          <select id="usuario-perfil" required>
+            <option value="GERENTE">Gerente</option>
+            <option value="FISCAL">Fiscal</option>
+            <option value="PEDREIRO">Pedreiro</option>
+          </select>
+        </div>
+        <div class="campo" id="campo-senha">
+          <label for="usuario-senha">Senha *</label>
+          <input class="input" type="password" id="usuario-senha" />
+          <div class="texto-pequeno texto-suave" id="dica-senha" style="display:none;">Deixe em branco para manter a senha atual.</div>
+        </div>
+        <div class="modal-acoes">
+          <button type="button" class="btn btn-ghost" id="btn-cancelar-usuario">Cancelar</button>
+          <button type="submit" class="btn btn-primario" id="btn-salvar-usuario">Salvar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="js/config.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/pages/gerente-usuarios.js"></script>
+</body>
+</html>

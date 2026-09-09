@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Verti — Ordens de Serviço</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <div class="container">
+    <div class="flex-entre mb-16">
+      <h2>Ordens de Serviço</h2>
+      <a href="gerente-nova.html" class="btn btn-primario">+ Nova OS</a>
+    </div>
+
+    <div class="card mb-16">
+      <form id="form-filtros" class="linha" style="align-items: flex-end;">
+        <div class="campo">
+          <label for="filtro-titulo">Título</label>
+          <input class="input" id="filtro-titulo" placeholder="Buscar por título" />
+        </div>
+        <div class="campo">
+          <label for="filtro-status">Status</label>
+          <select id="filtro-status">
+            <option value="">Todos</option>
+            <option value="ATRIBUIDA">Atribuída</option>
+            <option value="EM_ANDAMENTO">Em andamento</option>
+            <option value="AGUARDANDO_FISCAL">Aguardando fiscal</option>
+            <option value="FINALIZADA">Finalizada</option>
+            <option value="SEM_PEDREIRO">Sem pedreiro</option>
+            <option value="CANCELADA">Cancelada</option>
+          </select>
+        </div>
+        <div class="campo">
+          <label for="filtro-data-inicio">De</label>
+          <input class="input" type="date" id="filtro-data-inicio" />
+        </div>
+        <div class="campo">
+          <label for="filtro-data-fim">Até</label>
+          <input class="input" type="date" id="filtro-data-fim" />
+        </div>
+        <div class="campo" style="flex: 0;">
+          <button type="submit" class="btn btn-ghost">Filtrar</button>
+        </div>
+      </form>
+    </div>
+
+    <div id="area-tabela"><div class="carregando">Carregando...</div></div>
+    <div id="area-paginacao"></div>
+  </div>
+
+  <script src="js/config.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/pages/gerente-lista.js"></script>
+</body>
+</html>
