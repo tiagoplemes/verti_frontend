@@ -338,8 +338,8 @@ export default function OsDetalhe() {
           <div className="mt-16" style={{ display: "flex", flexDirection: "column", gap: 8 }}>
             {ordem.anexos.map((a) => (
               <div key={a._id} className="flex-entre" style={{ border: "1px solid var(--cor-borda)", borderRadius: "var(--raio)", padding: "8px 12px" }}>
-                <a href={API_BASE_URL + a.url} target="_blank" rel="noopener noreferrer">
-                  {a.url.split("/").pop()}
+                <a href={/^(https?:|blob:)/.test(a.url) ? a.url : API_BASE_URL + a.url} target="_blank" rel="noopener noreferrer">
+                  {a.nome || a.url.split("/").pop()}
                 </a>
                 {podeAnexar && (
                   <button className="btn btn-perigo btn-sm" onClick={() => removerAnexo(a._id)}>Remover</button>

@@ -1,5 +1,6 @@
 import { NavLink } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
+import { desativarModoDemo, modoDemoAtivo } from "../api/client.js";
 
 const NAV_ITENS = {
   GERENTE: [
@@ -11,12 +12,28 @@ const NAV_ITENS = {
   PEDREIRO: [{ to: "/pedreiro", label: "Minhas Ordens de Serviço" }],
 };
 
+// MODO TESTE: mostra o menu de todos os perfis junto, pra navegar em qualquer
+// tela logado com um usuário só (acompanha a trava desligada em ProtectedRoute.jsx).
+const MOSTRAR_MENU_COMPLETO = true;
+
 export default function Layout({ children }) {
   const { usuario, logout } = useAuth();
-  const itens = NAV_ITENS[usuario?.perfil] || [];
+  const itens = MOSTRAR_MENU_COMPLETO
+    ? Object.values(NAV_ITENS).flat()
+    : NAV_ITENS[usuario?.perfil] || [];
+
+  function sair() {
+    desativarModoDemo();
+    logout();
+  }
 
   return (
     <>
+      {modoDemoAtivo() && (
+        <div style={{ background: "var(--cor-ambar, #f59e0b)", color: "#1a1a1a", textAlign: "center", padding: "6px 12px", fontSize: 13, fontWeight: 600 }}>
+          Modo demonstração — dados fictícios, sem backend real
+        </div>
+      )}
       <header className="topbar">
         <div className="topbar-marca">Verti</div>
         <nav className="topbar-nav">
@@ -34,7 +51,7 @@ export default function Layout({ children }) {
         <div className="topbar-usuario">
           <span>{usuario?.nome}</span>
           <span className="badge badge-neutro">{usuario?.perfil}</span>
-          <button className="btn btn-ghost btn-sm" onClick={logout}>
+          <button className="btn btn-ghost btn-sm" onClick={sair}>
             Sair
           </button>
         </div>

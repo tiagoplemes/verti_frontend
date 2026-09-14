@@ -1,8 +1,22 @@
 // Wrapper único para chamadas à API. Trata token, JSON, erros e upload de arquivo.
 
+import { criarApiMock } from "./mockClient.js";
+
 export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3000";
 
 const TOKEN_KEY = "verti_token";
+const MODO_DEMO_KEY = "verti_demo";
+
+// Modo demonstração: navega pelas telas com dados fictícios, sem precisar do backend.
+export function modoDemoAtivo() {
+  return localStorage.getItem(MODO_DEMO_KEY) === "1";
+}
+export function ativarModoDemo() {
+  localStorage.setItem(MODO_DEMO_KEY, "1");
+}
+export function desativarModoDemo() {
+  localStorage.removeItem(MODO_DEMO_KEY);
+}
 
 export class ApiError extends Error {
   constructor(message, status) {
@@ -53,7 +67,7 @@ async function apiFetch(caminho, { method = "GET", body, isFormData = false } = 
   return dados;
 }
 
-export const api = {
+const apiReal = {
   login: (email, senha) => apiFetch("/auth/login", { method: "POST", body: { email, senha } }),
   me: () => apiFetch("/auth/me"),
 
@@ -92,3 +106,13 @@ export const api = {
   },
   excluirAnexo: (id, idAnexo) => apiFetch("/os/" + id + "/anexo/" + idAnexo, { method: "DELETE" }),
 };
+
+const apiMock = criarApiMock();
+
+// Em modo demo, cada chamada é desviada para os dados fictícios em vez de bater no backend.
+export const api = new Proxy(apiReal, {
+  get(target, prop) {
+    if (modoDemoAtivo() && prop in apiMock) return apiMock[prop];
+    return target[prop];
+  },
+});

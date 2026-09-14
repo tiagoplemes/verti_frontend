@@ -19,7 +19,15 @@ Interface web do sistema Verti (gestão de Ordens de Serviço), consumindo a API
 ## 2. Como rodar
 
 1. Backend do `verti_backend` rodando (MongoDB local + `npm run dev`, porta padrão `3000`).
-2. O backend **precisa ter CORS habilitado** (`app.use(cors())` em `app.js`) — sem isso o navegador bloqueia toda chamada do frontend, que roda em outra porta/origem.
+2. O backend **precisa ter CORS habilitado** — sem isso o navegador bloqueia toda chamada do frontend, mesmo com o backend respondendo normalmente (o erro aparece como "Não foi possível conectar ao servidor", mas o servidor está no ar; é só o navegador barrando por origem diferente). Habilitado **localmente nesta máquina** em `src/app.js`:
+   ```js
+   import cors from "cors";
+   // ...
+   app.use(cors());
+   ```
+   Adicionado logo depois de `const app = express();` e antes de `app.use(express.json())`. O pacote `cors` já estava no `package.json` do backend, só não era usado.
+
+   > ⚠️ **Isso só existe nesta cópia local.** Ainda precisa ser replicado no repositório principal do backend (mesmas duas linhas) pra funcionar pra qualquer outra pessoa que rodar o projeto.
 3. `npm install` nesta pasta (uma vez).
 4. `npm run dev` — abre em `http://localhost:5173`, com hot reload.
 5. Ajustar a URL da API em [`.env`](.env) (`VITE_API_BASE_URL`) se a porta do backend for diferente de `3000`.
@@ -126,7 +134,7 @@ Essa regra existe em código em dois lugares: nas listagens (`Pedreiro.jsx`, `Fi
 
 ## 10. Limitações conhecidas / próximos passos
 
-- **CORS depende do backend** — não foi alterado por decisão combinada com o autor do backend (ver item 2).
+- **CORS só habilitado localmente** — adicionado em `src/app.js` desta cópia do backend pra destravar os testes (ver item 2), mas ainda não está no repositório principal do backend. Precisa ser replicado lá.
 - **Sem paginação de anexos/histórico** — listas longas na tela de detalhe carregam tudo de uma vez (aceitável no volume esperado do projeto).
 - **Sem testes automatizados** — validação até aqui foi `npm run build` (compila JSX/bundla sem erros) + teste manual.
 - **Sem cache/offline** — toda tela recarrega os dados da API a cada visita; não há service worker nem React Query/SWR.
