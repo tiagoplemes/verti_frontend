@@ -12,9 +12,7 @@ const NAV_ITENS = {
   PEDREIRO: [{ to: "/pedreiro", label: "Minhas Ordens de Serviço" }],
 };
 
-// MODO TESTE: mostra o menu de todos os perfis junto, pra navegar em qualquer
-// tela logado com um usuário só (acompanha a trava desligada em ProtectedRoute.jsx).
-const MOSTRAR_MENU_COMPLETO = true;
+const MOSTRAR_MENU_COMPLETO = false;
 
 export default function Layout({ children }) {
   const { usuario, logout } = useAuth();
