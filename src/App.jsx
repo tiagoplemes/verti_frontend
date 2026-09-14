@@ -4,6 +4,7 @@ import Layout from "./components/Layout.jsx";
 import Login from "./pages/Login.jsx";
 import Pedreiro from "./pages/Pedreiro.jsx";
 import Fiscal from "./pages/Fiscal.jsx";
+import FiscalHistorico from "./pages/FiscalHistorico.jsx";
 import GerenteLista from "./pages/GerenteLista.jsx";
 import GerenteNova from "./pages/GerenteNova.jsx";
 import GerenteUsuarios from "./pages/GerenteUsuarios.jsx";
@@ -25,6 +26,7 @@ export default function App() {
       <Route path="/pedreiro" element={<Protegida perfis={["PEDREIRO"]}><Pedreiro /></Protegida>} />
 
       <Route path="/fiscal" element={<Protegida perfis={["FISCAL"]}><Fiscal /></Protegida>} />
+      <Route path="/fiscal/historico" element={<Protegida perfis={["FISCAL"]}><FiscalHistorico /></Protegida>} />
 
       <Route path="/gerente" element={<Protegida perfis={["GERENTE"]}><GerenteLista /></Protegida>} />
       <Route path="/gerente/nova" element={<Protegida perfis={["GERENTE"]}><GerenteNova /></Protegida>} />

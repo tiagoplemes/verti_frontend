@@ -8,7 +8,10 @@ const NAV_ITENS = {
     { to: "/gerente/nova", label: "Nova OS" },
     { to: "/gerente/usuarios", label: "Usuários" },
   ],
-  FISCAL: [{ to: "/fiscal", label: "Pendentes de Fiscalização" }],
+  FISCAL: [
+    { to: "/fiscal", label: "Pendentes de Fiscalização" },
+    { to: "/fiscal/historico", label: "Histórico" },
+  ],
   PEDREIRO: [{ to: "/pedreiro", label: "Minhas Ordens de Serviço" }],
 };
 

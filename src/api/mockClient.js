@@ -182,6 +182,14 @@ export function criarApiMock() {
       return store.ordens.filter((o) => o.status === "AGUARDANDO_FISCAL");
     },
 
+    async listarOSFiscalHistorico() {
+      await atraso();
+      const usuario = usuarioLogado();
+      return store.ordens
+        .filter((o) => o.fiscalResponsavel?._id === usuario?.id && ["FINALIZADA", "REPROVADA", "CANCELADA"].includes(o.status))
+        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    },
+
     async aprovarOS(id) {
       await atraso();
       const os = achar(id);

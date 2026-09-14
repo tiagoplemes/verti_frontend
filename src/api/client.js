@@ -87,6 +87,7 @@ const apiReal = {
 
   // OS - Fiscal
   listarOSFiscal: () => apiFetch("/os/fiscal"),
+  listarOSFiscalHistorico: () => apiFetch("/os/fiscal/historico"),
   aprovarOS: (id) => apiFetch("/os/" + id + "/aprovar", { method: "PATCH" }),
   reprovarOS: (id, observacao) => apiFetch("/os/" + id + "/reprovar", { method: "PATCH", body: { observacao } }),
 
