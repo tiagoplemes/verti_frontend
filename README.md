@@ -19,15 +19,7 @@ Interface web do sistema Verti (gestão de Ordens de Serviço), consumindo a API
 ## 2. Como rodar
 
 1. Backend do `verti_backend` rodando (MongoDB local + `npm run dev`, porta padrão `3000`).
-2. O backend **precisa ter CORS habilitado** — sem isso o navegador bloqueia toda chamada do frontend, mesmo com o backend respondendo normalmente (o erro aparece como "Não foi possível conectar ao servidor", mas o servidor está no ar; é só o navegador barrando por origem diferente). Habilitado **localmente nesta máquina** em `src/app.js`:
-   ```js
-   import cors from "cors";
-   // ...
-   app.use(cors());
-   ```
-   Adicionado logo depois de `const app = express();` e antes de `app.use(express.json())`. O pacote `cors` já estava no `package.json` do backend, só não era usado.
-
-   > ⚠️ **Isso só existe nesta cópia local.** Ainda precisa ser replicado no repositório principal do backend (mesmas duas linhas) pra funcionar pra qualquer outra pessoa que rodar o projeto.
+2. O backend já vem com CORS habilitado (`src/app.js`). Por padrão aceita qualquer origem; para restringir, defina `CORS_ORIGIN=http://localhost:5173` no `.env` do backend. Se aparecer "Não foi possível conectar ao servidor" com o backend no ar, confira essa variável.
 3. `npm install` nesta pasta (uma vez).
 4. `npm run dev` — abre em `http://localhost:5173`, com hot reload.
 5. Ajustar a URL da API em [`.env`](.env) (`VITE_API_BASE_URL`) se a porta do backend for diferente de `3000`.
@@ -75,7 +67,7 @@ Um objeto `api` com um método por endpoint do backend, evitando repetir `fetch`
 - **Auth**: `login`, `me`
 - **Usuários** (GERENTE): `listarUsuarios`, `buscarUsuario`, `criarUsuario`, `editarUsuario`, `ativarUsuario`, `desativarUsuario`
 - **OS — Pedreiro**: `listarMinhasOS`, `aceitarOS`, `recusarOS`, `concluirOS`
-- **OS — Fiscal**: `listarOSFiscal`, `aprovarOS`, `reprovarOS`
+- **OS — Fiscal**: `listarOSFiscal`, `listarOSFiscalHistorico`, `aprovarOS`, `reprovarOS`
 - **OS — Gerente**: `criarOS`, `listarOSFinalizadas`, `listarOSGerente`, `editarOS`, `cancelarOS`
 - **OS — compartilhado**: `buscarOSDetalhada`, `anexarArquivo` (multipart), `excluirAnexo`
 
@@ -88,10 +80,11 @@ Erros da API (`{ message }`) viram uma `ApiError` com `.message` pronto pra exib
 | `/login` | `Login.jsx` | público | Autenticação; já logado, redireciona pra home do perfil |
 | `/pedreiro` | `Pedreiro.jsx` | PEDREIRO | "Minhas OS": aceitar/recusar/concluir |
 | `/fiscal` | `Fiscal.jsx` | FISCAL | OS aguardando fiscalização: aprovar/reprovar |
+| `/fiscal/historico` | `FiscalHistorico.jsx` | FISCAL | OS que o fiscal já aprovou ou reprovou |
 | `/gerente` | `GerenteLista.jsx` | GERENTE | Listagem de OS com filtros + paginação |
 | `/gerente/nova` | `GerenteNova.jsx` | GERENTE | Criação de OS: fila de pedreiros ordenável + fiscal |
 | `/gerente/usuarios` | `GerenteUsuarios.jsx` | GERENTE | CRUD de usuários |
-| `/os/:id` | `OsDetalhe.jsx` | qualquer autenticado | Detalhe de uma OS — ações mudam conforme quem está vendo |
+| `/os/:id` | `OsDetalhe.jsx` | participantes da OS | Detalhe de uma OS (gerente criador, fiscal responsável ou pedreiro da vez — o backend responde 403 para os demais); ações mudam conforme quem está vendo |
 
 ## 7. Máquina de estados da OS, refletida na interface
 
@@ -111,7 +104,9 @@ CRIADA → ATRIBUIDA → EM_ANDAMENTO → AGUARDANDO_FISCAL → FINALIZADA
 | `EM_ANDAMENTO` / `REPROVADA` | Pedreiro atual | Concluir (com observação) |
 | `AGUARDANDO_FISCAL` | Fiscal responsável | Aprovar / Reprovar (com observação obrigatória) |
 | Qualquer, exceto `FINALIZADA`/`CANCELADA` | Gerente criador | Cancelar |
-| `FINALIZADA` | Gerente criador | Editar (regra do próprio backend — só edita depois de finalizada) |
+| `CRIADA` / `ATRIBUIDA` / `SEM_PEDREIRO` | Gerente criador | Editar (só antes de um pedreiro aceitar a OS) |
+
+Anexos aceitam imagem (JPG, PNG, WEBP, GIF, HEIC) ou PDF, até 10 MB.
 
 Essa regra existe em código em dois lugares: nas listagens (`Pedreiro.jsx`, `Fiscal.jsx`) e em `OsDetalhe.jsx`, que é a única tela acessível a qualquer perfil.
 
@@ -134,7 +129,6 @@ Essa regra existe em código em dois lugares: nas listagens (`Pedreiro.jsx`, `Fi
 
 ## 10. Limitações conhecidas / próximos passos
 
-- **CORS só habilitado localmente** — adicionado em `src/app.js` desta cópia do backend pra destravar os testes (ver item 2), mas ainda não está no repositório principal do backend. Precisa ser replicado lá.
 - **Sem paginação de anexos/histórico** — listas longas na tela de detalhe carregam tudo de uma vez (aceitável no volume esperado do projeto).
 - **Sem testes automatizados** — validação até aqui foi `npm run build` (compila JSX/bundla sem erros) + teste manual.
 - **Sem cache/offline** — toda tela recarrega os dados da API a cada visita; não há service worker nem React Query/SWR.

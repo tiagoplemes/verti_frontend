@@ -13,6 +13,9 @@ function enderecoTexto(endereco) {
   return partes.length ? partes.join(", ") : "—";
 }
 
+// Mesma regra do backend: a OS só é editável antes de algum pedreiro aceitá-la.
+const STATUS_EDITAVEIS = ["CRIADA", "ATRIBUIDA", "SEM_PEDREIRO"];
+
 function ehId(campoPopulado, id) {
   return campoPopulado && campoPopulado._id === id;
 }
@@ -280,9 +283,9 @@ export default function OsDetalhe() {
       {ehGerenteDono && (
         <div className="card mb-16">
           <h3 className="card-titulo">Editar OS</h3>
-          {ordem.status !== "FINALIZADA" ? (
+          {!STATUS_EDITAVEIS.includes(ordem.status) ? (
             <p className="texto-suave texto-pequeno" style={{ margin: 0 }}>
-              Esta OS só pode ser editada depois de finalizada.
+              Esta OS só pode ser editada antes de um pedreiro aceitá-la.
             </p>
           ) : (
             <form onSubmit={salvarEdicao}>
@@ -330,7 +333,12 @@ export default function OsDetalhe() {
           {podeAnexar && (
             <label className="btn btn-ghost btn-sm" style={{ cursor: "pointer" }}>
               + Anexar arquivo
-              <input type="file" style={{ display: "none" }} onChange={(e) => anexar(e.target.files[0])} />
+              <input
+                type="file"
+                accept="image/jpeg,image/png,image/webp,image/gif,image/heic,image/heif,application/pdf"
+                style={{ display: "none" }}
+                onChange={(e) => anexar(e.target.files[0])}
+              />
             </label>
           )}
         </div>
@@ -339,7 +347,7 @@ export default function OsDetalhe() {
             {ordem.anexos.map((a) => (
               <div key={a._id} className="flex-entre" style={{ border: "1px solid var(--cor-borda)", borderRadius: "var(--raio)", padding: "8px 12px" }}>
                 <a href={/^(https?:|blob:)/.test(a.url) ? a.url : API_BASE_URL + a.url} target="_blank" rel="noopener noreferrer">
-                  {a.nome || a.url.split("/").pop()}
+                  {a.nomeOriginal || a.nome || a.url.split("/").pop()}
                 </a>
                 {podeAnexar && (
                   <button className="btn btn-perigo btn-sm" onClick={() => removerAnexo(a._id)}>Remover</button>
