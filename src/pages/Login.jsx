@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
-import { api, ativarModoDemo } from "../api/client.js";
+import { api, ativarModoDemo, MODO_DEMO_PERMITIDO } from "../api/client.js";
 import { useAuth, paginaInicialDoPerfil } from "../context/AuthContext.jsx";
 import { useToast } from "../context/ToastContext.jsx";
 
@@ -10,6 +10,9 @@ const CONTAS_DEMO = [
   { perfil: "PEDREIRO", label: "Pedreiro", email: "pedreiro@demo.com" },
 ];
 const SENHA_DEMO = "demo123";
+
+// Link do APK do app Android (definido no build; vazio = link escondido).
+const APK_URL = import.meta.env.VITE_APK_URL;
 
 export default function Login() {
   const { usuario, token, login } = useAuth();
@@ -87,24 +90,37 @@ export default function Login() {
           </button>
         </form>
 
-        <div style={{ marginTop: 24, paddingTop: 16, borderTop: "1px solid var(--cor-borda)" }}>
-          <div className="texto-suave texto-pequeno" style={{ marginBottom: 8, textAlign: "center" }}>
-            Sem backend? Entre em modo demonstração com dados fictícios:
+        {APK_URL && (
+          <div style={{ marginTop: 24, paddingTop: 16, borderTop: "1px solid var(--cor-borda)", textAlign: "center" }}>
+            <a href={APK_URL} download className="btn btn-ghost" style={{ width: "100%" }}>
+              Baixar app para Android
+            </a>
+            <div className="texto-suave texto-pequeno" style={{ marginTop: 8 }}>
+              No iPhone, use o site e toque em Compartilhar → "Adicionar à Tela de Início".
+            </div>
           </div>
-          <div className="flex gap-8" style={{ flexWrap: "wrap", justifyContent: "center" }}>
-            {CONTAS_DEMO.map((conta) => (
-              <button
-                key={conta.perfil}
-                type="button"
-                className="btn btn-ghost btn-sm"
-                disabled={enviandoDemo}
-                onClick={() => entrarDemo(conta)}
-              >
-                {conta.label}
-              </button>
-            ))}
+        )}
+
+        {MODO_DEMO_PERMITIDO && (
+          <div style={{ marginTop: 24, paddingTop: 16, borderTop: "1px solid var(--cor-borda)" }}>
+            <div className="texto-suave texto-pequeno" style={{ marginBottom: 8, textAlign: "center" }}>
+              Sem backend? Entre em modo demonstração com dados fictícios:
+            </div>
+            <div className="flex gap-8" style={{ flexWrap: "wrap", justifyContent: "center" }}>
+              {CONTAS_DEMO.map((conta) => (
+                <button
+                  key={conta.perfil}
+                  type="button"
+                  className="btn btn-ghost btn-sm"
+                  disabled={enviandoDemo}
+                  onClick={() => entrarDemo(conta)}
+                >
+                  {conta.label}
+                </button>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );

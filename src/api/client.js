@@ -8,8 +8,12 @@ const TOKEN_KEY = "verti_token";
 const MODO_DEMO_KEY = "verti_demo";
 
 // Modo demonstração: navega pelas telas com dados fictícios, sem precisar do backend.
+// Só existe em desenvolvimento (npm run dev) ou se o build for gerado com VITE_MODO_DEMO=true;
+// em produção nem aparece na tela de login, e um flag antigo no navegador é ignorado.
+export const MODO_DEMO_PERMITIDO = import.meta.env.DEV || import.meta.env.VITE_MODO_DEMO === "true";
+
 export function modoDemoAtivo() {
-  return localStorage.getItem(MODO_DEMO_KEY) === "1";
+  return MODO_DEMO_PERMITIDO && localStorage.getItem(MODO_DEMO_KEY) === "1";
 }
 export function ativarModoDemo() {
   localStorage.setItem(MODO_DEMO_KEY, "1");

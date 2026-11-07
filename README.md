@@ -27,6 +27,12 @@ Interface web do sistema Verti (gestão de Ordens de Serviço), consumindo a API
 
 Para gerar a versão de produção: `npm run build` (saída em `dist/`) e `npm run preview` pra conferir o build localmente.
 
+**Produção:** o site é publicado pelo `docker-compose` do `verti_backend/deploy` (passo a passo em `verti_backend/deploy/README.md`). O `Dockerfile` desta pasta gera o build com `VITE_API_BASE_URL=https://api.vertiobras.com.br` e o Caddy serve os arquivos.
+
+- **Modo demonstração** só aparece em `npm run dev` (ou num build com `VITE_MODO_DEMO=true`); em produção a tela de login mostra apenas o formulário.
+- **Instalável no celular (PWA):** `public/manifest.webmanifest` + ícones em `public/`. No Android/iPhone, "Adicionar à tela de início" abre o Verti em tela cheia, como um app.
+- **Link do APK** na tela de login aparece quando o build recebe `VITE_APK_URL` (ex.: `/download/verti.apk`).
+
 ## 3. Estrutura de pastas
 
 ```
