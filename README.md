@@ -22,8 +22,8 @@ Interface web do sistema Verti (gestão de Ordens de Serviço), consumindo a API
 2. O backend já vem com CORS habilitado (`src/app.js`). Por padrão aceita qualquer origem; para restringir, defina `CORS_ORIGIN=http://localhost:5173` no `.env` do backend. Se aparecer "Não foi possível conectar ao servidor" com o backend no ar, confira essa variável.
 3. `npm install` nesta pasta (uma vez).
 4. `npm run dev` — abre em `http://localhost:5173`, com hot reload.
-5. Ajustar a URL da API em [`.env`](.env) (`VITE_API_BASE_URL`) se a porta do backend for diferente de `3000`.
-6. Como não existe rota pública de cadastro (`POST /users` exige um GERENTE já autenticado), o primeiro usuário precisa ser inserido direto no MongoDB.
+5. Copiar [`.env.example`](.env.example) para `.env` e ajustar `VITE_API_BASE_URL` se a porta do backend for diferente de `3000`.
+6. Como não existe rota pública de cadastro (`POST /users` exige um GERENTE já autenticado), o primeiro usuário é criado pelo terminal do backend: `npm run criar-gerente` na pasta `verti_backend`.
 
 Para gerar a versão de produção: `npm run build` (saída em `dist/`) e `npm run preview` pra conferir o build localmente.
 
@@ -39,7 +39,7 @@ Para gerar a versão de produção: `npm run build` (saída em `dist/`) e `npm r
 verti_frontend/
 ├── index.html                  → shell HTML único (SPA), monta <div id="root">
 ├── vite.config.js
-├── .env                         → VITE_API_BASE_URL
+├── .env.example                 → modelo do .env (VITE_API_BASE_URL, VITE_MODO_DEMO, VITE_APK_URL)
 ├── src/
 │   ├── main.jsx                 → ponto de entrada: providers (Router/Toast/Confirm/Auth) + <App/>
 │   ├── App.jsx                  → todas as rotas da aplicação
@@ -107,7 +107,7 @@ CRIADA → ATRIBUIDA → EM_ANDAMENTO → AGUARDANDO_FISCAL → FINALIZADA
 | Status | Quem vê a ação | Ação disponível |
 |---|---|---|
 | `ATRIBUIDA` | Pedreiro da vez | Aceitar / Recusar |
-| `EM_ANDAMENTO` / `REPROVADA` | Pedreiro atual | Concluir (com observação) |
+| `EM_ANDAMENTO` (inclusive depois de uma reprovação) | Pedreiro atual | Concluir (com observação) |
 | `AGUARDANDO_FISCAL` | Fiscal responsável | Aprovar / Reprovar (com observação obrigatória) |
 | Qualquer, exceto `FINALIZADA`/`CANCELADA` | Gerente criador | Cancelar |
 | `CRIADA` / `ATRIBUIDA` / `SEM_PEDREIRO` | Gerente criador | Editar (só antes de um pedreiro aceitar a OS) |

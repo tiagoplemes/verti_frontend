@@ -83,7 +83,7 @@ export default function Pedreiro() {
       {ordens &&
         ordens.map((os) => {
           const podeAceitarRecusar = os.status === "ATRIBUIDA";
-          const podeConcluir = os.status === "EM_ANDAMENTO" || os.status === "REPROVADA";
+          const podeConcluir = os.status === "EM_ANDAMENTO";
 
           return (
             <div className="card" key={os._id}>

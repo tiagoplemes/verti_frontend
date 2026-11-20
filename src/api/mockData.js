@@ -95,7 +95,7 @@ export const OS_SEED = [
     _id: "os-4",
     titulo: "Impermeabilização da laje",
     descricao: "Aplicação de manta asfáltica e impermeabilizante na laje de cobertura.",
-    status: "REPROVADA",
+    status: "EM_ANDAMENTO",
     valor: 4200,
     dataInicioPrevista: new Date(Date.now() - 8 * 86400000).toISOString(),
     dataFimPrevista: new Date(Date.now() - 2 * 86400000).toISOString(),

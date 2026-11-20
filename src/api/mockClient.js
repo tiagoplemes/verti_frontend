@@ -186,7 +186,7 @@ export function criarApiMock() {
       await atraso();
       const usuario = usuarioLogado();
       return store.ordens
-        .filter((o) => o.fiscalResponsavel?._id === usuario?.id && ["FINALIZADA", "REPROVADA", "CANCELADA"].includes(o.status))
+        .filter((o) => o.fiscalResponsavel?._id === usuario?.id && o.historico?.some((h) => ["Aprovada", "Reprovada"].includes(h.acao)))
         .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
     },
 
@@ -204,7 +204,8 @@ export function criarApiMock() {
       await atraso();
       const os = achar(id);
       if (!os) throw new Error("OS não encontrada.");
-      os.status = "REPROVADA";
+      // Igual ao backend: reprovar devolve a OS ao pedreiro para correção.
+      os.status = "EM_ANDAMENTO";
       os.observacaoReprovacaoFiscal = observacao || "";
       registrarHistorico(os, "Reprovada", usuarioPorId(os.fiscalResponsavel?._id), observacao);
       salvar();
@@ -249,8 +250,9 @@ export function criarApiMock() {
       let lista = [...store.ordens];
       if (filtros.titulo) lista = lista.filter((o) => o.titulo.toLowerCase().includes(String(filtros.titulo).toLowerCase()));
       if (filtros.status) lista = lista.filter((o) => o.status === filtros.status);
-      if (filtros.dataInicio) lista = lista.filter((o) => new Date(o.createdAt) >= new Date(filtros.dataInicio));
-      if (filtros.dataFim) lista = lista.filter((o) => new Date(o.createdAt) <= new Date(filtros.dataFim));
+      // Dias inteiros no horário local, como o backend faz: o dia final entra completo.
+      if (filtros.dataInicio) lista = lista.filter((o) => new Date(o.createdAt) >= new Date(filtros.dataInicio + "T00:00:00"));
+      if (filtros.dataFim) lista = lista.filter((o) => new Date(o.createdAt) <= new Date(filtros.dataFim + "T23:59:59.999"));
 
       lista.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 

@@ -197,7 +197,7 @@ export default function OsDetalhe() {
       <button key="recusar" className="btn btn-perigo" onClick={recusar}>Recusar</button>
     );
   }
-  if (ehPedreiroDono && (ordem.status === "EM_ANDAMENTO" || ordem.status === "REPROVADA")) {
+  if (ehPedreiroDono && ordem.status === "EM_ANDAMENTO") {
     botoesAcao.push(<button key="concluir" className="btn btn-primario" onClick={concluir}>Concluir OS</button>);
   }
   if (ehFiscalDono && ordem.status === "AGUARDANDO_FISCAL") {
