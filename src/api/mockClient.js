@@ -194,8 +194,10 @@ export function criarApiMock() {
       await atraso();
       const os = achar(id);
       if (!os) throw new Error("OS não encontrada.");
+      if (os.status !== "AGUARDANDO_FISCAL") throw new Error("A OS não está aguardando fiscalização.");
       os.status = "FINALIZADA";
-      registrarHistorico(os, "Aprovada", usuarioPorId(os.fiscalResponsavel?._id));
+      // Sem fiscal, quem aprova é o gerente criador (aprovação manual).
+      registrarHistorico(os, "Aprovada", usuarioPorId(os.fiscalResponsavel?._id || usuarioLogado()?.id));
       salvar();
       return os;
     },
@@ -204,10 +206,11 @@ export function criarApiMock() {
       await atraso();
       const os = achar(id);
       if (!os) throw new Error("OS não encontrada.");
+      if (os.status !== "AGUARDANDO_FISCAL") throw new Error("A OS não está aguardando fiscalização.");
       // Igual ao backend: reprovar devolve a OS ao pedreiro para correção.
       os.status = "EM_ANDAMENTO";
       os.observacaoReprovacaoFiscal = observacao || "";
-      registrarHistorico(os, "Reprovada", usuarioPorId(os.fiscalResponsavel?._id), observacao);
+      registrarHistorico(os, "Reprovada", usuarioPorId(os.fiscalResponsavel?._id || usuarioLogado()?.id), observacao);
       salvar();
       return os;
     },
@@ -285,6 +288,45 @@ export function criarApiMock() {
       return os;
     },
 
+    async definirFiscal(id, fiscalResponsavel) {
+      await atraso();
+      const os = achar(id);
+      if (!os) throw new Error("OS não encontrada.");
+      if (["FINALIZADA", "CANCELADA"].includes(os.status)) throw new Error("Não é possível alterar o fiscal desta OS.");
+      if (fiscalResponsavel) {
+        const fiscal = usuarioPorId(fiscalResponsavel);
+        if (!fiscal || fiscal.perfil !== "FISCAL" || !fiscal.ativo) throw new Error("Fiscal inválido ou inativo.");
+        os.fiscalResponsavel = ref(fiscal);
+        registrarHistorico(os, "Fiscal definido", usuarioPorId(usuarioLogado()?.id), fiscal.nome);
+      } else {
+        os.fiscalResponsavel = null;
+        registrarHistorico(os, "Fiscal removido", usuarioPorId(usuarioLogado()?.id));
+      }
+      salvar();
+      return os;
+    },
+
+    async redefinirFila(id, filaPedreiros) {
+      await atraso();
+      const os = achar(id);
+      if (!os) throw new Error("OS não encontrada.");
+      if (!["CRIADA", "ATRIBUIDA", "SEM_PEDREIRO"].includes(os.status)) {
+        throw new Error("A fila só pode ser alterada antes de um pedreiro aceitar a OS.");
+      }
+      const ids = filaPedreiros || [];
+      if (!ids.length) throw new Error("Informe pelo menos um pedreiro na fila.");
+      if (new Set(ids).size !== ids.length) throw new Error("A fila não pode ter pedreiros repetidos.");
+      const fila = ids.map((idPedreiro) => usuarioPorId(idPedreiro));
+      if (fila.some((p) => !p || p.perfil !== "PEDREIRO" || !p.ativo)) throw new Error("A fila contém pedreiros inválidos ou inativos.");
+      // O mock guarda a fila populada ({_id, nome, perfil}); o backend guarda só os ids.
+      os.filaPedreiros = fila.map(ref);
+      os.pedreiroAtual = os.filaPedreiros[0];
+      os.status = "ATRIBUIDA";
+      registrarHistorico(os, "Fila redefinida", usuarioPorId(usuarioLogado()?.id));
+      salvar();
+      return os;
+    },
+
     async buscarOSDetalhada(id) {
       await atraso();
       const os = achar(id);
@@ -300,8 +342,14 @@ export function criarApiMock() {
       await atraso();
       const os = achar(id);
       if (!os) throw new Error("OS não encontrada.");
+      // O backend compara o sha256 do conteúdo; no mock, nome + tamanho já basta.
+      if (os.anexos.some((a) => (a.nomeOriginal || a.nome) === arquivo.name && a.tamanho === arquivo.size)) {
+        const erro = new Error("Este arquivo já foi anexado a esta OS.");
+        erro.status = 409;
+        throw erro;
+      }
       const url = URL.createObjectURL(arquivo);
-      os.anexos.push({ _id: "anexo-" + Date.now(), url, nome: arquivo.name });
+      os.anexos.push({ _id: "anexo-" + Date.now(), url, nome: arquivo.name, nomeOriginal: arquivo.name, tamanho: arquivo.size, tipo: arquivo.type });
       salvar();
       return os;
     },

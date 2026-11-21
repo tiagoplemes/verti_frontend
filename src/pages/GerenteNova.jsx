@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { api } from "../api/client.js";
 import { useToast } from "../context/ToastContext.jsx";
+import FilaPedreiros from "../components/FilaPedreiros.jsx";
 
 export default function GerenteNova() {
   const { mostrarToast, mostrarErro } = useToast();
@@ -24,7 +25,6 @@ export default function GerenteNova() {
     cidade: "",
     estado: "",
     fiscalResponsavel: "",
-    pedreiroSelecionado: "",
   });
 
   function set(campo) {
@@ -45,31 +45,6 @@ export default function GerenteNova() {
       }
     })();
   }, [mostrarErro]);
-
-  const disponiveis = pedreiros.filter((p) => !fila.some((f) => f.id === p._id));
-
-  function adicionarNaFila() {
-    const id = form.pedreiroSelecionado || disponiveis[0]?._id;
-    if (!id) return;
-    const pedreiro = pedreiros.find((p) => p._id === id);
-    if (!pedreiro) return;
-    setFila((atual) => [...atual, { id: pedreiro._id, nome: pedreiro.nome }]);
-    setForm((f) => ({ ...f, pedreiroSelecionado: "" }));
-  }
-
-  function moverFila(indice, direcao) {
-    setFila((atual) => {
-      const nova = [...atual];
-      const alvo = indice + direcao;
-      if (alvo < 0 || alvo >= nova.length) return atual;
-      [nova[indice], nova[alvo]] = [nova[alvo], nova[indice]];
-      return nova;
-    });
-  }
-
-  function removerDaFila(indice) {
-    setFila((atual) => atual.filter((_, i) => i !== indice));
-  }
 
   async function enviar(e) {
     e.preventDefault();
@@ -108,7 +83,7 @@ export default function GerenteNova() {
   }
 
   return (
-    <div style={{ maxWidth: 760 }}>
+    <div style={{ maxWidth: 760, margin: "0 auto" }}>
       <h2 className="mb-16">Nova Ordem de Serviço</h2>
 
       <form onSubmit={enviar}>
@@ -189,47 +164,7 @@ export default function GerenteNova() {
             A OS será oferecida ao primeiro da lista; se recusar, passa automaticamente para o próximo.
           </p>
 
-          <div className="linha" style={{ alignItems: "flex-end" }}>
-            <div className="campo">
-              <label htmlFor="select-pedreiro">Pedreiro</label>
-              <select id="select-pedreiro" value={form.pedreiroSelecionado} onChange={set("pedreiroSelecionado")}>
-                {disponiveis.length === 0 && <option value="">Nenhum pedreiro disponível</option>}
-                {disponiveis.map((p) => (
-                  <option key={p._id} value={p._id}>
-                    {p.nome}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="campo" style={{ flex: 0 }}>
-              <button type="button" className="btn btn-ghost" onClick={adicionarNaFila} disabled={!disponiveis.length}>
-                + Adicionar à fila
-              </button>
-            </div>
-          </div>
-
-          <ul className="fila-pedreiros">
-            {fila.length === 0 && (
-              <li className="texto-suave texto-pequeno" style={{ border: "none", background: "none" }}>
-                Nenhum pedreiro adicionado ainda.
-              </li>
-            )}
-            {fila.map((p, indice) => (
-              <li key={p.id}>
-                <span className="posicao">{indice + 1}</span>
-                <span style={{ flex: 1 }}>{p.nome}</span>
-                <button type="button" className="btn btn-ghost btn-sm" disabled={indice === 0} onClick={() => moverFila(indice, -1)}>
-                  ↑
-                </button>
-                <button type="button" className="btn btn-ghost btn-sm" disabled={indice === fila.length - 1} onClick={() => moverFila(indice, 1)}>
-                  ↓
-                </button>
-                <button type="button" className="btn btn-perigo btn-sm" onClick={() => removerDaFila(indice)}>
-                  Remover
-                </button>
-              </li>
-            ))}
-          </ul>
+          <FilaPedreiros pedreiros={pedreiros} fila={fila} onChange={setFila} />
         </div>
 
         <div className="flex gap-8">

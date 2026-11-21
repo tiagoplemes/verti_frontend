@@ -63,7 +63,7 @@ verti_frontend/
 
 - Login (`POST /auth/login`) devolve `{ token, usuario: { id, nome, email, perfil } }`, salvos no `localStorage` via `AuthContext` (`login()`/`logout()`).
 - `<ProtectedRoute perfis={[...]}>` envolve cada rota protegida em `App.jsx`: sem sessão válida → redireciona pro login; perfil não autorizado naquela rota → redireciona pra home do perfil correto (`paginaInicialDoPerfil`).
-- `api/client.js` injeta `Authorization: Bearer <token>` em toda chamada e trata `401` global: dispara um callback registrado pelo `AuthContext` (`registrarAoDeslogar`) que limpa a sessão — evitando import circular entre a camada de API e o contexto de auth.
+- `api/client.js` injeta `Authorization: Bearer <token>` em toda chamada e trata `401` global (exceto em `/auth/*`, onde 401 é credencial inválida e só vira erro com a mensagem do backend): dispara um callback registrado pelo `AuthContext` (`registrarAoDeslogar`) que limpa a sessão — evitando import circular entre a camada de API e o contexto de auth.
 - Não existe refresh token: expirando o JWT (7 dias, definido no backend), o próximo `401` já desloga o usuário.
 
 ## 5. Camada de API (`src/api/client.js`)
@@ -73,9 +73,9 @@ Um objeto `api` com um método por endpoint do backend, evitando repetir `fetch`
 - **Auth**: `login`, `me`
 - **Usuários** (GERENTE): `listarUsuarios`, `buscarUsuario`, `criarUsuario`, `editarUsuario`, `ativarUsuario`, `desativarUsuario`
 - **OS — Pedreiro**: `listarMinhasOS`, `aceitarOS`, `recusarOS`, `concluirOS`
-- **OS — Fiscal**: `listarOSFiscal`, `listarOSFiscalHistorico`, `aprovarOS`, `reprovarOS`
-- **OS — Gerente**: `criarOS`, `listarOSFinalizadas`, `listarOSGerente`, `editarOS`, `cancelarOS`
-- **OS — compartilhado**: `buscarOSDetalhada`, `anexarArquivo` (multipart), `excluirAnexo`
+- **OS — Fiscal**: `listarOSFiscal`, `listarOSFiscalHistorico`, `aprovarOS`, `reprovarOS` (também usados pelo gerente criador quando a OS não tem fiscal)
+- **OS — Gerente**: `criarOS`, `listarOSFinalizadas`, `listarOSGerente`, `editarOS`, `cancelarOS`, `definirFiscal` (`PATCH /os/:id/fiscal`, `null` remove), `redefinirFila` (`PATCH /os/:id/fila`)
+- **OS — compartilhado**: `buscarOSDetalhada`, `anexarArquivo` (multipart; arquivo repetido na mesma OS → 409), `excluirAnexo`
 
 Erros da API (`{ message }`) viram uma `ApiError` com `.message` pronto pra exibir num toast — nenhuma página precisa fazer parsing de resposta.
 
@@ -88,9 +88,9 @@ Erros da API (`{ message }`) viram uma `ApiError` com `.message` pronto pra exib
 | `/fiscal` | `Fiscal.jsx` | FISCAL | OS aguardando fiscalização: aprovar/reprovar |
 | `/fiscal/historico` | `FiscalHistorico.jsx` | FISCAL | OS que o fiscal já aprovou ou reprovou |
 | `/gerente` | `GerenteLista.jsx` | GERENTE | Listagem de OS com filtros + paginação |
-| `/gerente/nova` | `GerenteNova.jsx` | GERENTE | Criação de OS: fila de pedreiros ordenável + fiscal |
+| `/gerente/nova` | `GerenteNova.jsx` | GERENTE | Criação de OS: fila de pedreiros ordenável (`components/FilaPedreiros.jsx`) + fiscal opcional |
 | `/gerente/usuarios` | `GerenteUsuarios.jsx` | GERENTE | CRUD de usuários |
-| `/os/:id` | `OsDetalhe.jsx` | participantes da OS | Detalhe de uma OS (gerente criador, fiscal responsável ou pedreiro da vez — o backend responde 403 para os demais); ações mudam conforme quem está vendo |
+| `/os/:id` | `OsDetalhe.jsx` | participantes da OS | Detalhe de uma OS (gerente criador, fiscal responsável ou pedreiro da vez — o backend responde 403 para os demais); ações mudam conforme quem está vendo; o gerente criador também troca o fiscal, redefine a fila e aprova manualmente OS sem fiscal |
 
 ## 7. Máquina de estados da OS, refletida na interface
 
@@ -109,10 +109,11 @@ CRIADA → ATRIBUIDA → EM_ANDAMENTO → AGUARDANDO_FISCAL → FINALIZADA
 | `ATRIBUIDA` | Pedreiro da vez | Aceitar / Recusar |
 | `EM_ANDAMENTO` (inclusive depois de uma reprovação) | Pedreiro atual | Concluir (com observação) |
 | `AGUARDANDO_FISCAL` | Fiscal responsável | Aprovar / Reprovar (com observação obrigatória) |
-| Qualquer, exceto `FINALIZADA`/`CANCELADA` | Gerente criador | Cancelar |
-| `CRIADA` / `ATRIBUIDA` / `SEM_PEDREIRO` | Gerente criador | Editar (só antes de um pedreiro aceitar a OS) |
+| `AGUARDANDO_FISCAL` sem fiscal | Gerente criador | Aprovar / Devolver ao pedreiro (aprovação manual, observação obrigatória) |
+| Qualquer, exceto `FINALIZADA`/`CANCELADA` | Gerente criador | Cancelar; definir/trocar/remover o fiscal |
+| `CRIADA` / `ATRIBUIDA` / `SEM_PEDREIRO` | Gerente criador | Editar (só antes de um pedreiro aceitar a OS); redefinir a fila — a OS volta para o 1º pedreiro (em `SEM_PEDREIRO` é o jeito de reenviá-la) |
 
-Anexos aceitam imagem (JPG, PNG, WEBP, GIF, HEIC) ou PDF, até 10 MB.
+Anexos aceitam imagem (JPG, PNG, WEBP, GIF, HEIC) ou PDF, até 10 MB. O mesmo arquivo não pode ser anexado duas vezes na mesma OS (a tela bloqueia por nome + tamanho; o backend, pelo hash do conteúdo).
 
 Essa regra existe em código em dois lugares: nas listagens (`Pedreiro.jsx`, `Fiscal.jsx`) e em `OsDetalhe.jsx`, que é a única tela acessível a qualquer perfil.
 

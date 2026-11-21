@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { api } from "../api/client.js";
 import { useToast } from "../context/ToastContext.jsx";
 import StatusBadge from "../components/StatusBadge.jsx";
+import AlternarVisao from "../components/AlternarVisao.jsx";
 import { formatarDataCurta, formatarMoeda } from "../utils/format.js";
 
 const STATUS_OPCOES = [
@@ -51,11 +52,14 @@ export default function GerenteLista() {
 
   return (
     <>
-      <div className="flex-entre mb-16">
+      <div className="flex-entre mb-16 cabecalho-pagina">
         <h2>Ordens de Serviço</h2>
-        <Link to="/gerente/nova" className="btn btn-primario">
-          + Nova OS
-        </Link>
+        <div className="flex gap-12" style={{ flexWrap: "wrap" }}>
+          <AlternarVisao />
+          <Link to="/gerente/nova" className="btn btn-primario">
+            + Nova OS
+          </Link>
+        </div>
       </div>
 
       <div className="card mb-16">

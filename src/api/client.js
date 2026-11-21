@@ -56,7 +56,9 @@ async function apiFetch(caminho, { method = "GET", body, isFormData = false } = 
     );
   }
 
-  if (resposta.status === 401) {
+  // 401 em /auth/* (login) é credencial inválida, não sessão expirada: cai no tratamento
+  // normal abaixo e exibe a mensagem do backend ("Usuário ou senha inválidos").
+  if (resposta.status === 401 && !caminho.startsWith("/auth/")) {
     aoDeslogar();
     throw new ApiError("Sessão expirada. Faça login novamente.", 401);
   }
@@ -101,6 +103,11 @@ const apiReal = {
   listarOSGerente: (filtros = {}) => apiFetch("/os/listOsGerente?" + new URLSearchParams(filtros).toString()),
   editarOS: (id, dados) => apiFetch("/os/editar/" + id, { method: "PUT", body: dados }),
   cancelarOS: (id) => apiFetch("/os/cancelar/" + id, { method: "PATCH" }),
+  // fiscalResponsavel = id do fiscal, ou null para remover (o gerente passa a aprovar manualmente)
+  definirFiscal: (id, fiscalResponsavel) =>
+    apiFetch("/os/" + id + "/fiscal", { method: "PATCH", body: { fiscalResponsavel: fiscalResponsavel || null } }),
+  // Substitui a fila (só em CRIADA/ATRIBUIDA/SEM_PEDREIRO); a OS volta para o 1º da nova fila.
+  redefinirFila: (id, filaPedreiros) => apiFetch("/os/" + id + "/fila", { method: "PATCH", body: { filaPedreiros } }),
 
   // OS - compartilhado
   buscarOSDetalhada: (id) => apiFetch("/os/detalhada/" + id),
