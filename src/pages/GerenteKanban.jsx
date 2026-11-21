@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { api } from "../api/client.js";
 import { useToast } from "../context/ToastContext.jsx";
@@ -58,6 +58,50 @@ export default function GerenteKanban() {
     carregar();
   }, [carregar]);
 
+  // Quadro do Kanban: ocupa a tela até o rodapé (barra de rolagem lá embaixo)
+  // e aceita Shift + roda do mouse para andar entre as colunas.
+  const quadroRef = useRef(null);
+  const quadroVisivel = colunas !== null;
+
+  useEffect(() => {
+    const quadro = quadroRef.current;
+    if (!quadro) return;
+
+    function ajustarAltura() {
+      const topo = quadro.getBoundingClientRect().top + window.scrollY;
+      const folgaInferior = parseFloat(getComputedStyle(quadro.parentElement).paddingBottom) || 0;
+      quadro.style.height = Math.max(360, window.innerHeight - topo - folgaInferior) + "px";
+    }
+
+    function rolarComShift(e) {
+      if (!e.shiftKey) return;
+      // Alguns navegadores já convertem Shift+roda em deltaX; outros mandam deltaY.
+      const delta = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
+      if (!delta) return;
+      e.preventDefault();
+      const fator = e.deltaMode === 1 ? 40 : e.deltaMode === 2 ? quadro.clientWidth : 1; // linhas/páginas → px
+      quadro.scrollLeft += delta * fator;
+    }
+
+    ajustarAltura();
+    window.addEventListener("resize", ajustarAltura);
+    quadro.addEventListener("wheel", rolarComShift, { passive: false });
+
+    // O cabeçalho e os filtros podem mudar de altura (quebra de linha ao recolher o menu, etc.).
+    const observador = new ResizeObserver(ajustarAltura);
+    let irmao = quadro.previousElementSibling;
+    while (irmao) {
+      observador.observe(irmao);
+      irmao = irmao.previousElementSibling;
+    }
+
+    return () => {
+      window.removeEventListener("resize", ajustarAltura);
+      quadro.removeEventListener("wheel", rolarComShift);
+      observador.disconnect();
+    };
+  }, [quadroVisivel]);
+
   function buscar(e) {
     e.preventDefault();
     setBuscaAplicada(busca.trim());
@@ -104,7 +148,13 @@ export default function GerenteKanban() {
       {!colunas && <div className="carregando">Carregando...</div>}
 
       {colunas && (
-        <div className="kanban">
+        <p className="kanban-dica">
+          <kbd>Shift</kbd> + roda do mouse para navegar entre as colunas
+        </p>
+      )}
+
+      {colunas && (
+        <div className="kanban" ref={quadroRef}>
           {visiveis.map((coluna) => {
             const dados = colunas[coluna.status] || { ordens: [], total: 0 };
             return (

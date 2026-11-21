@@ -571,22 +571,32 @@ tr:hover td { background: #fafbfc; }
   cursor: pointer;
 }
 
+/* O quadro ocupa a tela até o rodapé (altura calculada em GerenteKanban.jsx),
+   então a barra de rolagem horizontal fica no fundo da tela. */
 .kanban {
   display: flex;
   gap: 14px;
   overflow-x: auto;
-  padding-bottom: 12px;
-  align-items: flex-start;
-  scroll-snap-type: x proximity;
+  overflow-y: hidden;
+  padding-bottom: 10px;
+  align-items: stretch;
+  min-height: 360px;
+  overscroll-behavior-x: contain;
 }
+
+/* Na página do Kanban, menos espaço sobrando embaixo do quadro. */
+.container:has(> .kanban),
+.container:has(.kanban) { padding-bottom: 12px; }
 
 .kanban-coluna {
   flex: 0 0 280px;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
   background: #eef2ef;
   border-radius: 14px;
   padding: 12px;
   border-top: 4px solid var(--cor-coluna);
-  scroll-snap-align: start;
   animation: kanban-entrada 0.35s ease both;
 }
 
@@ -621,9 +631,59 @@ tr:hover td { background: #fafbfc; }
   display: flex;
   flex-direction: column;
   gap: 10px;
-  max-height: calc(100vh - 260px);
+  flex: 1;
+  min-height: 0;
   overflow-y: auto;
-  padding: 2px;
+  padding: 2px 4px 2px 2px;
+}
+
+.kanban-dica {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: -4px 0 10px;
+  font-size: 0.78rem;
+  color: var(--cor-texto-suave);
+}
+
+.kanban-dica kbd {
+  font-family: inherit;
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 1px 6px;
+  border: 1px solid var(--cor-borda);
+  border-bottom-width: 2px;
+  border-radius: 5px;
+  background: #fff;
+}
+
+/* ---------- Barras de rolagem do Kanban (tema verde) ---------- */
+/* Chrome / Edge / Safari */
+.kanban::-webkit-scrollbar { height: 12px; }
+
+.kanban::-webkit-scrollbar-track {
+  background: #e3ebe5;
+  border-radius: 999px;
+  margin: 0 4px;
+}
+
+.kanban::-webkit-scrollbar-thumb {
+  background: linear-gradient(90deg, var(--cor-primaria), var(--cor-primaria-escura));
+  border-radius: 999px;
+  border: 3px solid #e3ebe5;
+}
+
+.kanban::-webkit-scrollbar-thumb:hover { background: var(--cor-primaria-profunda); }
+
+.kanban-cards::-webkit-scrollbar { width: 6px; }
+.kanban-cards::-webkit-scrollbar-track { background: transparent; }
+.kanban-cards::-webkit-scrollbar-thumb { background: #c3d3c7; border-radius: 999px; }
+.kanban-cards::-webkit-scrollbar-thumb:hover { background: var(--cor-primaria); }
+
+/* Firefox (só onde não existe ::-webkit-scrollbar, para não anular o estilo acima no Chrome) */
+@supports not selector(::-webkit-scrollbar) {
+  .kanban { scrollbar-color: var(--cor-primaria) #e3ebe5; }
+  .kanban-cards { scrollbar-width: thin; scrollbar-color: #c3d3c7 transparent; }
 }
 
 .kanban-card {
